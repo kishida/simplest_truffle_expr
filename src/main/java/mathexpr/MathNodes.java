@@ -35,14 +35,12 @@ public class MathNodes {
 
     static class MathRootNode extends RootNode {
         private MathNode body;
-        private String name;
 
         public MathRootNode(
                 TruffleLanguage<?> language, FrameDescriptor frameDescriptor, 
-                MathNode body, String name) {
+                MathNode body) {
             super(language, frameDescriptor);
             this.body = body;
-            this.name = name;
         }
         
         @Override

@@ -10,6 +10,7 @@ import com.oracle.truffle.api.instrumentation.StandardTags;
 import mathexpr.MathNodes.LongNode;
 import mathexpr.MathNodes.MathNode;
 import mathexpr.MathNodes.MathRootNode;
+import mathexpr.MathNodesFactory.VariableNodeGen;
 
 /**
  *
@@ -29,12 +30,22 @@ public class MathLang extends TruffleLanguage<MathLang.MathLangContext>{
     protected CallTarget parse(ParsingRequest request) throws Exception {
         String source = request.getSource().getCharacters().toString();
         String[] nums = source.split("\\+");
-        MathNode node = LongNode.of(nums[nums.length - 1]);
+        FrameDescriptor frame = new FrameDescriptor();
+
+        MathNode node = parseNode(frame, nums[nums.length - 1]);
         for (int i = nums.length - 2; i >= 0; --i) {
-            node = MathNodesFactory.AddNodeGen.create(LongNode.of(nums[i]), node);
+            node = MathNodesFactory.AddNodeGen.create(parseNode(frame, nums[i]), node);
         }
-        MathRootNode root = new MathRootNode(this, new FrameDescriptor(), node, "main");
+        MathRootNode root = new MathRootNode(this, frame, node, "main");
         return Truffle.getRuntime().createCallTarget(root);
+    }
+    
+    MathNode parseNode(FrameDescriptor frame, String value) {
+        try {
+            return LongNode.of(value);
+        } catch (NumberFormatException ex) {
+            return VariableNodeGen.create(frame.findOrAddFrameSlot(value));
+        }
     }
     
     @Override

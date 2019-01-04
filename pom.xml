@@ -38,7 +38,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>mathexpr.MathMain</mainClass>
+                            <mainClass>mathexpr.MathCommand</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

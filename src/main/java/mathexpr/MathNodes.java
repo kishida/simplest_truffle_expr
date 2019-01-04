@@ -1,11 +1,18 @@
 package mathexpr;
 
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystem;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.frame.FrameSlotTypeException;
+import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
@@ -28,21 +35,26 @@ public class MathNodes {
 
     static class MathRootNode extends RootNode {
         private MathNode body;
-        private String name;
 
         public MathRootNode(
                 TruffleLanguage<?> language, FrameDescriptor frameDescriptor, 
-                MathNode body, String name) {
+                MathNode body) {
             super(language, frameDescriptor);
             this.body = body;
-            this.name = name;
         }
         
         @Override
         public Object execute(VirtualFrame frame) {
+            setup(frame);
             return body.executeGeneric(frame);
         }
         
+        void setup(VirtualFrame frame) {
+            final FrameDescriptor desc = frame.getFrameDescriptor();
+            FrameSlot slotAa = desc.findOrAddFrameSlot("aa");
+            desc.setFrameSlotKind(slotAa, FrameSlotKind.Long);
+            frame.setLong(slotAa, 123);            
+        }
     }
     
     @NodeInfo(shortName = "value")
@@ -53,7 +65,7 @@ public class MathNodes {
             this.value = value;
         }
         
-        static LongNode of(String v) {
+        static LongNode of(String v) throws NumberFormatException {
             return new LongNode(Long.parseLong(v.trim()));
         }
         
@@ -79,5 +91,15 @@ public class MathNodes {
         public Object add(Object left, Object right) {
             return null;
         }
+    }
+    
+    @NodeField(name = "slot", type = FrameSlot.class)
+    public static abstract class VariableNode extends MathNode {
+        abstract FrameSlot getSlot();
+        
+        @Specialization
+        long readLong(VirtualFrame vf) {
+            return FrameUtil.getLongSafe(vf, getSlot());
+        }       
     }
 }

@@ -37,10 +37,10 @@ public class FunctionNodes {
         
     }
     
-    static class InvokeNode extends MathNode {
+    static class MathInvokeNode extends MathNode {
         MathFunction function;
 
-        public InvokeNode(MathFunction function) {
+        public MathInvokeNode(MathFunction function) {
             this.function = function;
         }
         

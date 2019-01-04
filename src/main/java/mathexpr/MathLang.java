@@ -7,12 +7,13 @@ import com.oracle.truffle.api.debug.DebuggerTags;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
 import com.oracle.truffle.api.instrumentation.StandardTags;
+import mathexpr.FunctionNodes.FuncRootNode;
 import mathexpr.FunctionNodes.MathFunction;
-import mathexpr.RandNode;
-import mathexpr.RandNodeGen;
+import mathexpr.FunctionNodes.MathInvokeNode;
 import mathexpr.MathNodes.LongNode;
 import mathexpr.MathNodes.MathNode;
 import mathexpr.MathNodes.MathRootNode;
+import mathexpr.MathNodesFactory.AddNodeGen;
 import mathexpr.MathNodesFactory.VariableNodeGen;
 
 /**
@@ -37,7 +38,7 @@ public class MathLang extends TruffleLanguage<MathLang.MathLangContext>{
 
         MathNode node = parseNode(frame, nums[nums.length - 1]);
         for (int i = nums.length - 2; i >= 0; --i) {
-            node = MathNodesFactory.AddNodeGen.create(parseNode(frame, nums[i]), node);
+            node = AddNodeGen.create(parseNode(frame, nums[i]), node);
         }
         MathRootNode root = new MathRootNode(this, frame, node);
         return Truffle.getRuntime().createCallTarget(root);
@@ -48,7 +49,7 @@ public class MathLang extends TruffleLanguage<MathLang.MathLangContext>{
         if (RAND_FUNC == null) {
             RandNode rand = RandNodeGen.create();
             RAND_FUNC = new MathFunction(Truffle.getRuntime().createCallTarget(
-                    new FunctionNodes.FuncRootNode(this, frame, rand)));
+                    new FuncRootNode(this, new FrameDescriptor(), rand)));
         }
         return RAND_FUNC;
     }
@@ -58,7 +59,7 @@ public class MathLang extends TruffleLanguage<MathLang.MathLangContext>{
             return LongNode.of(value);
         } catch (NumberFormatException ex) {
             if ("rand".equals(value)) {
-                return new FunctionNodes.InvokeNode(createBuiltin(frame));
+                return new MathInvokeNode(createBuiltin(frame));
             } else {
                 return VariableNodeGen.create(frame.findOrAddFrameSlot(value));
             }

@@ -16,7 +16,14 @@
             <artifactId>truffle-dsl-processor</artifactId>
             <version>1.0.0-rc9</version>
             <scope>provided</scope>
-        </dependency>        
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>graal-sdk</artifactId>
+            <version>1.0.0-rc9</version>
+            <scope>provided</scope>
+        </dependency>
+        
     </dependencies>
     <build>
         <plugins>
@@ -31,7 +38,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>kis.phpparser.Loader</mainClass>
+                            <mainClass>mathexpr.MathCommand</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
